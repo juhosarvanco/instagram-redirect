@@ -42,19 +42,32 @@
             return navigator.userAgent.indexOf('Instagram') > -1;
         }
         
+        // Format URL for Safari
+        function formatUrlForSafari(url) {
+            // Make sure URL has https:// prefix
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+            
+            // Remove the protocol for x-safari-https format
+            const cleanUrl = url.replace(/^https?:\/\//, '');
+            return cleanUrl;
+        }
+        
         // Handle the redirect based on platform
         function handleRedirect() {
             const targetUrl = getTargetUrl();
+            const safariFormattedUrl = formatUrlForSafari(targetUrl);
             
             if (isInstagramBrowser()) {
                 // iOS approach
                 if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                    // Try Safari first
-                    window.location.href = `x-web-search://?${encodeURIComponent(targetUrl)}`;
+                    // Try Safari using the format without the query parameter style
+                    window.location.href = `x-safari-https://${safariFormattedUrl}`;
                     
                     // Try Chrome next
                     setTimeout(function() {
-                        window.location.href = `googlechrome://${targetUrl.replace(/^https?:\/\//, '')}`;
+                        window.location.href = `googlechrome://${safariFormattedUrl}`;
                     }, 25);
                 } 
                 // Android approach
