@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirecting to External Browser</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="2;url=https://example.com">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            margin: 20px auto;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <script>
+        // Parse the target URL from query parameters
+        function getTargetUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('url') || 'https://example.com';
+        }
+        
+        // Detect Instagram's in-app browser
+        function isInstagramBrowser() {
+            return navigator.userAgent.indexOf('Instagram') > -1;
+        }
+        
+        // Handle the redirect based on platform
+        function handleRedirect() {
+            const targetUrl = getTargetUrl();
+            
+            if (isInstagramBrowser()) {
+                // iOS approach
+                if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                    // Try Safari first
+                    window.location.href = `x-web-search://?${encodeURIComponent(targetUrl)}`;
+                    
+                    // Try Chrome next
+                    setTimeout(function() {
+                        window.location.href = `googlechrome://${targetUrl.replace(/^https?:\/\//, '')}`;
+                    }, 25);
+                } 
+                // Android approach
+                else {
+                    window.location.href = `intent:${targetUrl}#Intent;scheme=https;package=com.android.chrome;end`;
+                }
+                
+                // Final fallback
+                setTimeout(function() {
+                    window.location.href = targetUrl;
+                }, 50);
+            } else {
+                // Already in external browser, just redirect
+                window.location.href = targetUrl;
+            }
+            
+            // Update the meta refresh as fallback
+            document.querySelector('meta[http-equiv="refresh"]').content = `2;url=${targetUrl}`;
+            document.getElementById('manual-link').href = targetUrl;
+        }
+    </script>
+</head>
+<body onload="handleRedirect()">
+    <div class="container">
+        <h2>Opening in external browser...</h2>
+        <div class="loader"></div>
+        <p>If you are not redirected automatically, <a id="manual-link" href="https://example.com">click here</a>.</p>
+    </div>
+</body>
+</html>
