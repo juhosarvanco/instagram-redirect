@@ -47,10 +47,10 @@
             const targetUrl = getTargetUrl();
             
             if (isInstagramBrowser()) {
-                // iOS approach
+                // iOS approach - FIXED VERSION
                 if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                    // Try Safari first
-                    window.location.href = `x-web-search://?${encodeURIComponent(targetUrl)}`;
+                    // Try opening in Safari directly without x-web-search
+                    window.location.href = `safari-https://${targetUrl.replace(/^https?:\/\//, '')}`;
                     
                     // Try Chrome next
                     setTimeout(function() {
@@ -74,6 +74,9 @@
             // Update the meta refresh as fallback
             document.querySelector('meta[http-equiv="refresh"]').content = `2;url=${targetUrl}`;
             document.getElementById('manual-link').href = targetUrl;
+            
+            // Update display text to show target URL
+            document.getElementById('target-url-display').textContent = targetUrl;
         }
     </script>
 </head>
@@ -81,6 +84,7 @@
     <div class="container">
         <h2>Opening in external browser...</h2>
         <div class="loader"></div>
+        <p>Redirecting to: <span id="target-url-display">https://example.com</span></p>
         <p>If you are not redirected automatically, <a id="manual-link" href="https://example.com">click here</a>.</p>
     </div>
 </body>
