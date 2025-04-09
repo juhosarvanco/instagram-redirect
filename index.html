@@ -54,15 +54,26 @@
             return cleanUrl;
         }
         
+        // Ensure URL has proper protocol
+        function ensureProtocol(url) {
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                return 'https://' + url;
+            }
+            return url;
+        }
+        
         // Handle the redirect based on platform
         function handleRedirect() {
-            const targetUrl = getTargetUrl();
+            let targetUrl = getTargetUrl();
+            // Ensure target URL has proper protocol
+            targetUrl = ensureProtocol(targetUrl);
+            
             const safariFormattedUrl = formatUrlForSafari(targetUrl);
             
             if (isInstagramBrowser()) {
                 // iOS approach
                 if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                    // Try Safari using the format without the query parameter style
+                    // Try Safari using the clean format
                     window.location.href = `x-safari-https://${safariFormattedUrl}`;
                     
                     // Try Chrome next
@@ -71,8 +82,14 @@
                     }, 25);
                 } 
                 // Android approach
-                else {
-                    window.location.href = `intent:${targetUrl}#Intent;scheme=https;package=com.android.chrome;end`;
+                else if (/Android/.test(navigator.userAgent)) {
+                    // Use proper intent format with correctly formatted URL
+                    window.location.href = `intent://${safariFormattedUrl}#Intent;scheme=https;package=com.android.chrome;end`;
+                    
+                    // Alternative approach for some Android versions
+                    setTimeout(function() {
+                        window.location.href = `https://${safariFormattedUrl}`;
+                    }, 25);
                 }
                 
                 // Final fallback
